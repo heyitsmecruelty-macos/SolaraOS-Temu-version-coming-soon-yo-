@@ -42,8 +42,8 @@ const next = document.getElementById("next");
 const pageStatus = document.getElementById("page-status");
 const player = document.getElementById("player");
 const playerTitle = document.getElementById("player-title");
+const playerStatus = document.getElementById("player-status");
 const playerFrame = document.getElementById("player-frame");
-const openNewTab = document.getElementById("open-new-tab");
 const closePlayerButton = document.getElementById("close-player");
 
 const games = Array.isArray(window.GAME_IDS)
@@ -51,6 +51,7 @@ const games = Array.isArray(window.GAME_IDS)
   : [];
 let currentPage = 0;
 let focusedGame = null;
+let launchSequence = 0;
 
 function titleFor(id) {
   if (knownTitles[id]) return knownTitles[id];
@@ -80,6 +81,15 @@ function urlFor(game) {
 
 function iconUrlFor(game) {
   return knownFavicons[game.id] || null;
+}
+
+function addBaseUrl(markup, url) {
+  if (/<base\b/i.test(markup)) return markup;
+  const escapedUrl = url.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
+  const base = `<base href="${escapedUrl}">`;
+  return /<head\b[^>]*>/i.test(markup)
+    ? markup.replace(/<head\b[^>]*>/i, (head) => `${head}${base}`)
+    : `${base}${markup}`;
 }
 
 function createCard(game, index) {
@@ -147,18 +157,47 @@ function render() {
 }
 
 function openGame(game, button) {
+  const sequence = ++launchSequence;
   focusedGame = button;
   playerTitle.textContent = game.title;
   playerFrame.title = game.title;
-  const url = urlFor(game);
-  playerFrame.src = url;
-  openNewTab.href = url;
+  playerFrame.onload = null;
+  playerFrame.removeAttribute("srcdoc");
+  playerStatus.textContent = `Loading ${game.title}...`;
+  playerStatus.hidden = false;
   player.hidden = false;
   closePlayerButton.focus();
+  loadGame(game, sequence);
+}
+
+async function loadGame(game, sequence) {
+  const url = urlFor(game);
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Game request failed (${response.status})`);
+    const markup = await response.text();
+    if (sequence !== launchSequence || player.hidden) return;
+
+    playerFrame.onload = () => {
+      if (sequence === launchSequence) playerStatus.hidden = true;
+    };
+    playerFrame.srcdoc = addBaseUrl(markup, url);
+    playerStatus.textContent = `Starting ${game.title}...`;
+    window.setTimeout(() => {
+      if (sequence === launchSequence) playerStatus.hidden = true;
+    }, 2500);
+  } catch (error) {
+    console.error(`Unable to load ${game.title}`, error);
+    if (sequence !== launchSequence || player.hidden) return;
+    playerFrame.removeAttribute("srcdoc");
+    playerStatus.textContent = `Could not load ${game.title}. Check your connection and try again.`;
+  }
 }
 
 function closeGame() {
-  playerFrame.removeAttribute("src");
+  launchSequence++;
+  playerFrame.onload = null;
+  playerFrame.removeAttribute("srcdoc");
   player.hidden = true;
   if (focusedGame?.isConnected) focusedGame.focus();
   focusedGame = null;

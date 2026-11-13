@@ -184,7 +184,7 @@
     }
     .player-title { overflow: hidden; font-size: 13px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
     .player-actions { display: flex; flex: none; gap: 7px; }
-    .player-actions button, .player-actions a {
+    .player-actions button {
       padding: 7px 10px;
       border: 1px solid rgba(255, 255, 255, .14);
       border-radius: 9px;
@@ -192,8 +192,15 @@
       color: white;
       cursor: pointer;
       font-size: 11px;
-      text-decoration: none;
     }
+    .player-status {
+      margin: 0;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, .045);
+      color: rgba(235, 239, 255, .72);
+      font-size: 12px;
+    }
+    .player-status[hidden] { display: none; }
     .player-frame { width: 100%; height: 100%; flex: 1; border: 0; background: #050608; }
     @keyframes card-arrive { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes player-arrive { from { opacity: 0; } to { opacity: 1; } }
@@ -208,7 +215,7 @@
       .game-icon { width: 56px; height: 56px; border-radius: 16px; }
       .player { padding: 8px; }
       .player-window { border-radius: 12px; }
-      .player-actions button, .player-actions a { padding: 7px; }
+      .player-actions button { padding: 7px; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
@@ -243,11 +250,11 @@
       <div class="player-bar">
         <span class="player-title" id="player-title"></span>
         <div class="player-actions">
-          <a id="open-new-tab" target="_blank" rel="noopener noreferrer">New tab</a>
           <button id="close-player" type="button" aria-label="Close game">Close</button>
         </div>
       </div>
-      <iframe class="player-frame" id="player-frame" title="Selected game" allow="fullscreen; autoplay; gamepad; pointer-lock" allowfullscreen></iframe>
+      <p class="player-status" id="player-status" role="status">Loading game...</p>
+      <iframe class="player-frame" id="player-frame" title="Selected game" sandbox="allow-scripts allow-forms allow-popups allow-pointer-lock" allow="fullscreen; autoplay; gamepad; pointer-lock" allowfullscreen></iframe>
     </div>
   </section>
 </body>
