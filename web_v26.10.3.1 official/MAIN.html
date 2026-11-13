@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="theme-color" content="#171820"/>
+  <title>EBMS Launchpage</title>
+  <link rel="icon" type="image/png" href="pages/img assets/ebms.png"/>
+  <style>
+    :root {
+      --menu-height: 34px;
+      --dock-height: 80px;
+      --window-line: rgba(0,0,0,.12);
+      --chrome-glow: rgba(255,255,255,.28);
+      --soft-panel: rgba(255,255,255,.08);
+      --soft-panel-strong: rgba(255,255,255,.12);
+      --shadow-soft: 0 18px 50px rgba(12,17,29,.22);
+      --shadow-dock: 0 14px 30px rgba(12,17,29,.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      overflow: hidden;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
+      background: #0d1322;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
+    }
+
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
+    .wallpaper {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse at 15% 82%, rgba(255,176,170,.8), transparent 28%),
+        radial-gradient(ellipse at 72% 18%, rgba(124,194,255,.72), transparent 30%),
+        radial-gradient(ellipse at 82% 68%, rgba(160,157,255,.7), transparent 36%),
+        linear-gradient(135deg, #12263d, #1e3556 32%, #403f73 76%, #2b2b48);
+      filter: saturate(.96) brightness(.96);
+    }
+
+    .wallpaper::before, .wallpaper::after {
+      content: "";
+      position: absolute;
+      width: 82vw;
+      height: 82vw;
+      min-width: 720px;
+      min-height: 720px;
+      border-radius: 48%;
+      filter: blur(2px);
+      transform: rotate(-24deg);
+    }
+
+    .wallpaper::before {
+      top: 24%;
+      left: -18%;
+      background: linear-gradient(140deg, #ffb39f, #f36bb4 40%, #7c77ff 80%);
+      opacity: .62;
+    }
+
+    .wallpaper::after {
+      top: -58%;
+      right: -12%;
+      background: linear-gradient(150deg, #c2f7ef, #57a0ee 45%, #a79aff);
+      opacity: .7;
+    }
+
+    .wallpaper-shade {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(9,14,23,.08), rgba(9,14,23,.04) 40%, rgba(9,14,23,.18));
+    }
+
+    .menubar {
+      position: fixed;
+      z-index: 1000;
+      inset: 0 0 auto;
+      height: var(--menu-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      color: rgba(255,255,255,.96);
+      background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.04)), rgba(14,17,25,.22);
+      border-bottom: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(26px) saturate(180%) brightness(1.12);
+      -webkit-backdrop-filter: blur(26px) saturate(180%) brightness(1.12);
+      user-select: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 1px 0 rgba(255,255,255,.04);
+      overflow: hidden;
+    }
+
+    .menubar::before,
+    .dock::before,
+    .app-window::before,
+    .spotlight-panel::before,
+    .context-menu::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,0) 24%, rgba(255,255,255,.07) 52%, rgba(255,255,255,.14));
+      mix-blend-mode: screen;
+    }
+
+    .menu-left, .menu-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 100%;
+    }
+
+    .menu-brand { font-size: 13px; font-weight: 800; white-space: nowrap; letter-spacing: .02em; }
+    .menu-label, .menu-status { font-size: 12px; white-space: nowrap; opacity: .92; }
+
+    .menu-search {
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.04));
+      color: inherit;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.22), inset 0 -2px 8px rgba(255,255,255,.04), 0 3px 8px rgba(15,20,32,.12);
+      backdrop-filter: blur(10px) saturate(140%);
+      -webkit-backdrop-filter: blur(10px) saturate(140%);
+    }
+
+    .menu-search:hover {
+      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06));
+      border-color: rgba(255,255,255,.20);
+    }
+
+    .top-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-right: 6px;
+    }
+
+    .top-link {
+      color: rgba(255,255,255,.9);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      transition: background .15s ease, border-color .15s ease, transform .15s ease;
+    }
+
+    .top-link:hover,
+    .top-link:focus-visible {
+      background: rgba(255,255,255,.08);
+      border-color: rgba(255,255,255,.2);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .desktop {
+      position: fixed;
+      inset: var(--menu-height) 0 calc(var(--dock-height) + 18px);
+      overflow: auto;
+      padding: 30px 28px;
+      scrollbar-width: thin;
+    }
+
+    .desktop::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+
+    .desktop-heading {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 20px;
+      text-align: center;
+      font-size: clamp(2.5rem, 5.3vw, 4.7rem);
+      line-height: .96;
+      letter-spacing: .04em;
+      text-transform: none;
+      font-weight: 700;
+      color: rgba(255,255,255,.92);
+      text-shadow: 0 1px 0 rgba(255,255,255,.08), 0 10px 26px rgba(8,8,14,.2);
+    }
+
+    .app-grid {
+      position: relative;
+      z-index: 1;
+      width: min(960px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+      justify-items: center;
+      gap: 18px 12px;
+    }
+
+    .app {
+      position: relative;
+      width: 108px;
+      min-height: 118px;
+      padding: 8px 5px 4px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      background: rgba(255,255,255,.01);
+      color: white;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    .app:hover, .app:focus-visible {
+      outline: none;
+      border-color: rgba(255,255,255,.22);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 12px 26px rgba(0,0,0,.12);
+    }
+
+    .app:active { transform: scale(.97); }
+
+    .app-icon {
+      position: relative;
+      width: 62px;
+      height: 62px;
+      margin: 0 auto 7px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.05));
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.16);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.28), inset 0 -8px 16px rgba(255,255,255,.04), 0 12px 20px rgba(7,10,18,.18);
+      backdrop-filter: blur(12px) saturate(130%);
+      -webkit-backdrop-filter: blur(12px) saturate(130%);
+    }
+
+    .app-icon-image, .dock-icon-image {
+      position: relative;
+      z-index: 1;
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: inherit;
+    }
+
+    .app-label {
+      display: block;
+      padding: 2px 5px 0;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.24;
+      color: white;
+      overflow-wrap: anywhere;
+      text-shadow: 0 1px 6px rgba(0,0,0,.82);
+    }
+
+    .window-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .app-window {
+      position: absolute;
+      width: min(960px, calc(100vw - 48px));
+      height: min(680px, calc(100vh - 112px));
+      min-width: min(320px, calc(100vw - 20px));
+      min-height: 240px;
+      display: block;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.68);
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(247,248,252,.96), rgba(234,238,247,.88));
+      box-shadow: 0 26px 80px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.82), inset 0 -1px 0 rgba(0,0,0,.06);
+      pointer-events: auto;
+      resize: both;
+      animation: window-open .18s ease-out;
+      backdrop-filter: blur(12px) saturate(1.2);
+      -webkit-backdrop-filter: blur(12px) saturate(1.2);
+      overflow: hidden;
+    }
+
+    @keyframes window-open {
+      from { opacity: 0; transform: scale(.97) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .app-window.maximized {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      min-width: 0 !important;
+      min-height: 0 !important;
+      border-radius: 0;
+      resize: none;
+    }
+
+    .titlebar {
+      position: relative;
+      z-index: 2;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(238,241,246,.9));
+      border-bottom: 1px solid var(--window-line);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,.04), inset 0 1px 0 rgba(255,255,255,.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .window-controls {
+      position: absolute;
+      left: 13px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .window-control {
+      width: 12px;
+      height: 12px;
+      padding: 0;
+      display: inline-block;
+      border: 1px solid rgba(0,0,0,.18);
+      border-radius: 50%;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.45);
+      transition: transform .15s ease, filter .15s ease;
+    }
+
+    .window-control:hover { transform: scale(1.06); }
+    .window-control.close { background: #ff5f57; }
+    .window-control.minimize { background: #febb2e; }
+    .window-control.fullscreen { background: #28c840; }
+
+    .window-title {
+      max-width: 60%;
+      overflow: hidden;
+      color: #30313a;
+      font-size: 13px;
+      font-weight: 600;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      letter-spacing: -.01em;
+    }
+
+    .app-frame {
+      position: absolute;
+      inset: 42px 0 0 0;
+      display: block;
+      width: 100%;
+      height: calc(100% - 42px);
+      border: 0;
+      background: white;
+    }
+
+    .dock-wrap {
+      position: fixed;
+      z-index: 100;
+      right: 0;
+      bottom: 8px;
+      left: 0;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .dock {
+      display: flex;
+      align-items: flex-end;
+      gap: 7px;
+      max-width: calc(100vw - 20px);
+      min-height: 68px;
+      padding: 8px 12px 9px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.46);
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.06)), rgba(210,220,245,.18);
+      box-shadow: var(--shadow-dock), inset 0 1px 0 rgba(255,255,255,.26), inset 0 -10px 18px rgba(255,255,255,.04);
+      backdrop-filter: blur(30px) saturate(180%) brightness(1.08);
+      -webkit-backdrop-filter: blur(30px) saturate(180%) brightness(1.08);
+      pointer-events: auto;
+    }
+
+    .dock-button {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      flex: 0 0 48px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(255,255,255,.30), rgba(255,255,255,.08)), var(--icon-color, #667bd4);
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+      border: 1px solid rgba(255,255,255,.52);
+      border-radius: 14px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.36), inset 0 -10px 14px rgba(0,0,0,.06), 0 8px 18px rgba(26,33,53,.18);
+      backdrop-filter: blur(12px) saturate(140%);
+      -webkit-backdrop-filter: blur(12px) saturate(140%);
+    }
+
+    .dock-button::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+
+    .dock-button:hover, .dock-button:focus-visible {
+      outline: none;
+      transform: translateY(-9px) scale(1.14);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 12px 24px rgba(21,20,33,.22);
+    }
+
+    .dock-button.is-open::after {
+      content: "";
+      position: absolute;
+      bottom: -5px;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.18);
+    }
+
+    .dock-button.minimized { opacity: .72; }
+    .dock-divider { width: 1px; height: 38px; margin: 0 2px; background: rgba(255,255,255,.38); align-self: center; }
+
+    .calendar-icon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      background: white !important;
+      color: #1c1c1e;
+      border-radius: inherit;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .app-icon.calendar-icon {
+      gap: 3px;
+      padding-top: 8px;
+    }
+
+    .app-icon.calendar-icon .calendar-weekday { font-size: 9px; }
+    .app-icon.calendar-icon .calendar-day { font-size: 29px; }
+
+    .dock-calendar-icon {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 2px;
+      padding-top: 5px;
+      border-radius: inherit;
+      background: white;
+    }
+
+    .dock-calendar-icon .calendar-weekday { font-size: 7px; }
+    .dock-calendar-icon .calendar-day { font-size: 22px; }
+
+    .calendar-weekday {
+      color: #ff3b30;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .calendar-day {
+      color: #1c1c1e;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .spotlight {
+      position: fixed;
+      z-index: 2000;
+      inset: 0;
+      display: none;
+      justify-content: center;
+      align-items: flex-start;
+      padding: min(18vh, 150px) 16px 20px;
+      background: rgba(8,10,18,.28);
+      backdrop-filter: blur(10px);
+    }
+
+    .spotlight.open { display: flex; }
+
+    .spotlight-panel {
+      width: min(620px, 100%);
+      overflow: hidden;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(247,248,252,.94), rgba(237,240,248,.9));
+      color: #1f2228;
+      box-shadow: 0 24px 80px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.75), inset 0 -10px 18px rgba(255,255,255,.06);
+      backdrop-filter: blur(18px) saturate(1.2);
+      -webkit-backdrop-filter: blur(18px) saturate(1.2);
+      position: relative;
+    }
+
+    .spotlight-input-wrap {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+    }
+
+    .spotlight-input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      color: #1d1f26;
+      background: transparent;
+      font-size: 20px;
+    }
+
+    .spotlight-results { max-height: min(55vh, 420px); overflow-y: auto; padding: 7px; }
+
+    .spotlight-result {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 11px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #242830;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .spotlight-result:hover { background: #dfe9ff; }
+
+    .spotlight-result-icon {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      border-radius: 10px;
+      background: var(--icon-color, #667bd4);
+    }
+
+    .spotlight-empty { padding: 22px; color: #6d7180; text-align: center; }
+
+    .context-menu {
+      position: fixed;
+      z-index: 3000;
+      display: none;
+      width: 220px;
+      padding: 6px;
+      border: 1px solid rgba(255,255,255,.5);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(243,245,250,.96), rgba(228,233,244,.88));
+      color: #1e232a;
+      box-shadow: 0 16px 40px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.7);
+      backdrop-filter: blur(18px) saturate(1.2);
+      -webkit-backdrop-filter: blur(18px) saturate(1.2);
+      position: fixed;
+    }
+
+    .context-menu.open { display: block; }
+
+    .context-menu button {
+      width: 100%;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .context-menu button:hover { background: #2f7ef7; color: white; }
+
+    .copyright {
+      position: fixed;
+      right: 8px;
+      bottom: 88px;
+      left: 8px;
+      z-index: 2;
+      color: rgba(255,255,255,.84);
+      font-size: 11px;
+      text-align: center;
+      pointer-events: none;
+      text-shadow: 0 1px 4px rgba(0,0,0,.65);
+    }
+
+    .copyright a { color: white; pointer-events: auto; }
+
+    html[data-settings-theme="light"] .menubar {
+      color: #20232a;
+      background: linear-gradient(180deg, rgba(255,255,255,.9), rgba(235,240,250,.78));
+    }
+
+    html[data-settings-theme="light"] .menu-search { color: #20232a; }
+
+    html[data-settings-theme="light"] .desktop-heading {
+      color: #202638;
+      text-shadow: 0 2px 10px rgba(255,255,255,.3), 0 12px 26px rgba(0,0,0,.14);
+    }
+
+    html[data-settings-theme="light"] .dock {
+      background: linear-gradient(180deg, rgba(255,255,255,.66), rgba(255,255,255,.28)), rgba(225,235,255,.45);
+      border-color: rgba(255,255,255,.82);
+    }
+
+    html[data-settings-app-labels="false"] .app-label { display: none !important; }
+
+    html[data-settings-dock-magnification="false"] .dock-button:hover,
+    html[data-settings-dock-magnification="false"] .dock-button:focus-visible {
+      transform: none !important;
+    }
+
+    html[data-settings-reduce-motion="true"] *,
+    html[data-settings-reduce-motion="true"] *::before,
+    html[data-settings-reduce-motion="true"] *::after {
+      animation-duration: .01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: .01ms !important;
+    }
+
+    html[data-settings-wallpaper="sunset"] .wallpaper {
+      background:
+        radial-gradient(ellipse at 15% 86%, rgba(255,203,93,.9), transparent 32%),
+        radial-gradient(ellipse at 73% 17%, rgba(255,124,92,.85), transparent 34%),
+        radial-gradient(ellipse at 80% 72%, rgba(177,69,156,.8), transparent 42%),
+        linear-gradient(135deg, #512b5c, #bd5267 48%, #f49b5b);
+    }
+
+    html[data-settings-wallpaper="ocean"] .wallpaper {
+      background:
+        radial-gradient(ellipse at 15% 86%, rgba(80, 227, 205, 0.604), transparent 32%),
+        radial-gradient(ellipse at 73% 17%, rgba(62,170,223,.8), transparent 34%),
+        radial-gradient(ellipse at 80% 72%, rgba(65,87,181,.82), transparent 42%),
+        linear-gradient(135deg, #123b55, #176f9c 42%, #343f82);
+    }
+
+    html[data-settings-wallpaper="midnight"] .wallpaper {
+      background:
+        radial-gradient(ellipse at 15% 86%, rgba(96,83,145,.72), transparent 32%),
+        radial-gradient(ellipse at 73% 17%, rgba(69,88,129,.75), transparent 34%),
+        radial-gradient(ellipse at 80% 72%, rgba(60,45,93,.8), transparent 42%),
+        linear-gradient(135deg, #10131d, #20283a 48%, #312344);
+    }
+
+    html[data-settings-wallpaper="sunset"] .wallpaper::before,
+    html[data-settings-wallpaper="sunset"] .wallpaper::after,
+    html[data-settings-wallpaper="ocean"] .wallpaper::before,
+    html[data-settings-wallpaper="ocean"] .wallpaper::after,
+    html[data-settings-wallpaper="midnight"] .wallpaper::before,
+    html[data-settings-wallpaper="midnight"] .wallpaper::after { display: none; }
+
+    @media (max-width: 600px) {
+      .menubar { padding: 0 10px; }
+      .menu-left, .menu-right { gap: 10px; }
+      .menu-label.optional { display: none; }
+      .menu-status { font-size: 11px; }
+      .desktop { padding: 20px 12px; }
+      .app-grid { grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 10px 6px; }
+      .app { width: 82px; }
+      .app-icon { width: 56px; height: 56px; border-radius: 15px; }
+      .app-label { font-size: 10px; }
+      .app-window { width: calc(100vw - 16px); height: calc(100vh - 70px); min-width: 0; min-height: 200px; }
+      .dock { min-height: 60px; gap: 5px; padding: 6px 8px 8px; }
+      .dock-button { width: 42px; height: 42px; flex-basis: 42px; border-radius: 12px; font-size: 21px; }
+      .copyright { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wallpaper" aria-hidden="true"></div>
+  <div class="wallpaper-shade" aria-hidden="true"></div>
+
+  <header class="menubar">
+    <div class="menu-left">
+      <span class="menu-brand">◆ Tags.ᐟ</span>
+      <span class="menu-label">Finder</span>
+      <span class="menu-label optional">File</span>
+      <span class="menu-label optional">Edit</span>
+      <span class="menu-label optional">View</span>
+      <span class="menu-label optional">Go</span>
+      <span class="menu-label optional">Window</span>
+      <span class="menu-label optional">Help</span>
+    </div>
+    <div class="menu-right">
+      <nav class="top-links" aria-label="Project links">
+        <a class="top-link" href="pages/contact.html">Contact me!</a>
+        <a class="top-link" href="pages/Contributers.html">Contributors</a>
+      </nav>
+      <button class="menu-search" id="searchButton" type="button" aria-label="Search apps" title="Search apps (Ctrl/⌘ K)">⌕</button>
+      <span class="menu-status" aria-hidden="true">◉</span>
+      <span class="menu-status" aria-hidden="true">◖</span>
+      <span class="menu-status" id="clock"></span>
+    </div>
+  </header>
+
+  <main class="desktop">
+    <h1 class="desktop-heading">Tags.ᐟ</h1>
+    <div class="app-grid" id="appGrid" aria-label="Applications"></div>
+  </main>
+
+  <div class="window-layer" id="windowLayer"></div>
+
+  <div class="dock-wrap">
+    <nav class="dock" aria-label="Dock">
+      <button class="dock-button" id="dockFinder" type="button" title="Show desktop" aria-label="Show desktop" style="--icon-color:#4f9ef8">⌂</button>
+      <button class="dock-button" id="dockSearch" type="button" title="Search apps" aria-label="Search apps" style="--icon-color:#7772d5">⌕</button>
+      <span class="dock-divider" aria-hidden="true"></span>
+      <div id="dockApps" style="display:contents"></div>
+    </nav>
+  </div>
+
+  <div class="spotlight" id="spotlight" role="dialog" aria-modal="true" aria-label="Search applications">
+    <div class="spotlight-panel">
+      <div class="spotlight-input-wrap">
+        <span aria-hidden="true">⌕</span>
+        <input class="spotlight-input" id="spotlightInput" type="search" placeholder="Search apps" autocomplete="off" />
+      </div>
+      <div class="spotlight-results" id="spotlightResults"></div>
+    </div>
+  </div>
+
+  <div class="context-menu" id="contextMenu" role="menu"></div>
+
+  <footer class="copyright">
+    © 2026 Jonah Muzio. Website code licensed under
+    <a href="LICENSE">MIT License</a>. Games belong to their respective creators.
+  </footer>
+
+  <script>
+    "use strict";
+
+    const apps = [
+      { title: "Chat!", url: "pages/chat.html", image: "pages/img assets/texts.png", color: "#3d9b8b" },
+      { title: "Camera", url: "pages/camera.html", image: "pages/img assets/camera.webp", color: "#000" },
+      { title: "Codespace", url: "pages/codespace.html", image: "pages/img assets/coding.png", color: "#000" },
+      { title: "Calculator", url: "pages/calculator.html", image: "pages/img assets/calculator.png", color: "#a391ff" },
+      { title: "Notes", url: "pages/notes.html", image: "pages/img assets/notes.png", color: "#a391ff" },
+      { title: "Weather", url: "pages/weather.html", image: "pages/img assets/weather.png", color: "#a391ff" },
+      { title: "Calendar", url: "pages/calendar.html", image: "N/A", color: "#a391ff" },
+      { title: "Settings", url: "pages/settings.html", icon: "", image: "pages/img assets/settings.jpeg", color: "#778399" },
+      { title: "Games", url: "pages/launcher.html", icon: "", image: "pages/img assets/games.webp", color: "#778399" }
+    ];
+
+    const appGrid = document.getElementById("appGrid");
+    const windowLayer = document.getElementById("windowLayer");
+    const dockApps = document.getElementById("dockApps");
+    const spotlight = document.getElementById("spotlight");
+    const spotlightInput = document.getElementById("spotlightInput");
+    const spotlightResults = document.getElementById("spotlightResults");
+    const contextMenu = document.getElementById("contextMenu");
+    const openWindows = new Map();
+
+    let topZIndex = 20;
+    let spawnIndex = 0;
+
+    function createCalendarIcon(className) {
+      const icon = document.createElement("span");
+      icon.className = `${className} calendar-icon`;
+      icon.setAttribute("aria-hidden", "true");
+
+      const weekday = document.createElement("span");
+      weekday.className = "calendar-weekday";
+      const day = document.createElement("span");
+      day.className = "calendar-day";
+
+      icon.append(weekday, day);
+      updateCalendarIcon(icon);
+      return icon;
+    }
+
+    function updateCalendarIcon(icon) {
+      const now = new Date();
+      const weekday = icon.querySelector(".calendar-weekday");
+      const day = icon.querySelector(".calendar-day");
+      if (!weekday || !day) return;
+
+      weekday.textContent = new Intl.DateTimeFormat(undefined, { weekday: "short" })
+        .format(now).replace(".", "");
+
+      day.textContent = String(now.getDate());
+    }
+
+    function updateCalendarIcons() {
+      document.querySelectorAll(".calendar-icon").forEach(updateCalendarIcon);
+    }
+
+    function readSetting(key, fallback) {
+      try {
+        return localStorage.getItem(`tags-settings-${key}`) ?? fallback;
+      } catch {
+        return fallback;
+      }
+    }
+
+    function applySavedSettings(settings = {}) {
+      const root = document.documentElement;
+      const theme = settings.theme ?? readSetting("theme", "dark");
+      const wallpaper = settings.wallpaper ?? readSetting("wallpaper", "aurora");
+
+      root.dataset.settingsTheme = ["light", "dark"].includes(theme) ? theme : "dark";
+      root.dataset.settingsWallpaper = ["aurora", "sunset", "ocean", "midnight"].includes(wallpaper)
+        ? wallpaper
+        : "aurora";
+      root.dataset.settingsDockMagnification =
+        String(settings.dockMagnification ?? readSetting("dockMagnification", "true"));
+      root.dataset.settingsAppLabels =
+        String(settings.appLabels ?? readSetting("appLabels", "true"));
+      root.dataset.settingsReduceMotion =
+        String(settings.reduceMotion ?? readSetting("reduceMotion", "false"));
+    }
+
+    function createAppIcon(app, className = "app-icon") {
+      if (app.title === "Calendar") return createCalendarIcon(className);
+
+      const icon = document.createElement("span");
+      icon.className = className;
+      icon.style.setProperty("--icon-color", app.color);
+
+      if (!app.image) {
+        icon.textContent = app.icon || "";
+        return icon;
+      }
+
+      const image = document.createElement("img");
+      image.className = "app-icon-image";
+      image.src = app.image;
+      image.alt = "";
+      image.draggable = false;
+      image.onerror = () => {
+        image.remove();
+        icon.textContent = app.icon || "";
+      };
+      icon.appendChild(image);
+      return icon;
+    }
+
+    function buildDesktopApps() {
+      for (const app of apps) {
+        const button = document.createElement("button");
+        button.className = "app";
+        button.type = "button";
+        button.title = `Open ${app.title}`;
+        button.dataset.appUrl = app.url;
+        button.addEventListener("click", () => openApp(app));
+        button.addEventListener("contextmenu", (event) => {
+          event.preventDefault();
+          showContextMenu(event, app);
+        });
+
+        const label = document.createElement("span");
+        label.className = "app-label";
+        label.textContent = app.title;
+        button.append(createAppIcon(app), label);
+        appGrid.appendChild(button);
+      }
+    }
+
+    function makeControl(kind, label, action) {
+      const button = document.createElement("button");
+      button.className = `window-control ${kind}`;
+      button.type = "button";
+      button.title = label;
+      button.setAttribute("aria-label", label);
+      button.addEventListener("pointerdown", (event) => event.stopPropagation());
+      button.addEventListener("click", (event) => {
+        event.stopPropagation();
+        action();
+      });
+      return button;
+    }
+
+    function openApp(app) {
+      const existing = openWindows.get(app.url);
+      if (existing) {
+        restoreWindow(app.url);
+        return;
+      }
+
+      const win = document.createElement("section");
+      win.className = "app-window";
+      win.setAttribute("role", "dialog");
+      win.setAttribute("aria-label", app.title);
+      win.style.zIndex = String(++topZIndex);
+
+      const width = Math.min(960, window.innerWidth - 48);
+      const height = Math.min(680, window.innerHeight - 112);
+      const left = Math.max(8, (window.innerWidth - width) / 2 + (spawnIndex % 5) * 24);
+      const top = Math.max(42, (window.innerHeight - height) / 2 + (spawnIndex % 5) * 18);
+      win.style.left = `${left}px`;
+      win.style.top = `${top}px`;
+      spawnIndex++;
+
+      const titlebar = document.createElement("div");
+      titlebar.className = "titlebar";
+
+      const controls = document.createElement("div");
+      controls.className = "window-controls";
+      controls.append(
+        makeControl("close", "Close", () => closeWindow(app.url)),
+        makeControl("minimize", "Minimize", () => minimizeWindow(app.url)),
+        makeControl("fullscreen", "Toggle fullscreen", () => toggleWindowFullscreen(win))
+      );
+
+      titlebar.addEventListener("dblclick", () => {
+        win.classList.toggle("maximized");
+      });
+
+      const title = document.createElement("span");
+      title.className = "window-title";
+      title.textContent = app.title;
+      titlebar.append(controls, title);
+
+      const frame = document.createElement("iframe");
+      frame.className = "app-frame";
+      frame.title = app.title;
+      frame.src = new URL(app.url, location.href).href;
+      frame.allow = "fullscreen; autoplay; gamepad; pointer-lock; clipboard-read; clipboard-write";
+      frame.setAttribute("allowfullscreen", "");
+      frame.loading = "eager";
+
+      win.append(titlebar, frame);
+      windowLayer.appendChild(win);
+
+      const dockButton = document.createElement("button");
+      dockButton.className = "dock-button is-open";
+      dockButton.type = "button";
+      dockButton.title = app.title;
+      dockButton.setAttribute("aria-label", `Show ${app.title}`);
+      dockButton.style.setProperty("--icon-color", app.color);
+
+      if (app.title === "Calendar") {
+        dockButton.appendChild(createCalendarIcon("dock-calendar-icon"));
+      } else if (!app.image) {
+        dockButton.textContent = app.icon || "";
+      } else {
+        const image = document.createElement("img");
+        image.className = "dock-icon-image";
+        image.src = app.image;
+        image.alt = "";
+        image.draggable = false;
+        image.onerror = () => {
+          image.remove();
+          dockButton.textContent = app.icon || "";
+        };
+        dockButton.appendChild(image);
+      }
+
+      dockButton.addEventListener("click", () => restoreWindow(app.url));
+      dockApps.appendChild(dockButton);
+      openWindows.set(app.url, { win, dockButton, app });
+
+      makeDraggable(win, titlebar);
+      win.addEventListener("pointerdown", () => { win.style.zIndex = String(++topZIndex); });
+      win.addEventListener("dblclick", (event) => {
+        if (!event.target.closest(".window-controls")) win.classList.toggle("maximized");
+      });
+    }
+
+    function closeWindow(url) {
+      const entry = openWindows.get(url);
+      if (!entry) return;
+      entry.win.remove();
+      entry.dockButton.remove();
+      openWindows.delete(url);
+    }
+
+    function minimizeWindow(url) {
+      const entry = openWindows.get(url);
+      if (!entry) return;
+      entry.win.style.display = "none";
+      entry.dockButton.classList.add("minimized");
+      entry.dockButton.classList.remove("is-open");
+    }
+
+    function restoreWindow(url) {
+      const entry = openWindows.get(url);
+      if (!entry) return;
+      entry.win.style.display = "flex";
+      entry.win.style.zIndex = String(++topZIndex);
+      entry.dockButton.classList.remove("minimized");
+      entry.dockButton.classList.add("is-open");
+    }
+
+    function toggleWindowFullscreen(win) {
+      if (!document.fullscreenElement) {
+        win.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function makeDraggable(win, titlebar) {
+      let pointerId = null;
+      let startX = 0, startY = 0, startLeft = 0, startTop = 0;
+
+      titlebar.addEventListener("pointerdown", (event) => {
+        if (event.target.closest(".window-controls") || win.classList.contains("maximized") || event.button !== 0) return;
+        pointerId = event.pointerId;
+        const rect = win.getBoundingClientRect();
+        startX = event.clientX;
+        startY = event.clientY;
+        startLeft = rect.left;
+        startTop = rect.top;
+        titlebar.setPointerCapture(pointerId);
+      });
+
+      titlebar.addEventListener("pointermove", (event) => {
+        if (pointerId !== event.pointerId) return;
+        const left = startLeft + event.clientX - startX;
+        const top = startTop + event.clientY - startY;
+        const maxLeft = Math.max(0, window.innerWidth - win.offsetWidth);
+        const maxTop = Math.max(0, window.innerHeight - 42);
+        win.style.left = `${Math.max(0, Math.min(left, maxLeft))}px`;
+        win.style.top = `${Math.max(0, Math.min(top, maxTop))}px`;
+      });
+
+      const endDrag = (event) => {
+        if (event.pointerId === pointerId) pointerId = null;
+      };
+      titlebar.addEventListener("pointerup", endDrag);
+      titlebar.addEventListener("pointercancel", endDrag);
+      titlebar.addEventListener("lostpointercapture", () => { pointerId = null; });
+    }
+
+    function showContextMenu(event, app = null) {
+      contextMenu.replaceChildren();
+
+      const addItem = (label, action) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = label;
+        button.addEventListener("click", () => {
+          contextMenu.classList.remove("open");
+          action();
+        });
+        contextMenu.appendChild(button);
+      };
+
+      if (app) {
+        addItem("Open", () => openApp(app));
+        addItem("Open in New Tab", () => window.open(new URL(app.url, location.href).href, "_blank", "noopener"));
+      } else {
+        addItem("Search Apps", openSpotlight);
+        addItem("Show Desktop", () => {
+          for (const { win } of openWindows.values()) win.style.display = "none";
+        });
+      }
+
+      contextMenu.classList.add("open");
+      contextMenu.style.left = `${Math.max(10, Math.min(event.clientX, innerWidth - 230))}px`;
+      contextMenu.style.top = `${Math.max(10, Math.min(event.clientY, innerHeight - contextMenu.offsetHeight))}px`;
+    }
+
+    function openSpotlight() {
+      spotlight.classList.add("open");
+      spotlightInput.value = "";
+      renderSpotlightResults("");
+      requestAnimationFrame(() => spotlightInput.focus());
+    }
+
+    function closeSpotlight() {
+      spotlight.classList.remove("open");
+    }
+
+    function renderSpotlightResults(query) {
+      spotlightResults.replaceChildren();
+      const normalized = query.trim().toLowerCase();
+      const matches = apps.filter((app) => app.title.toLowerCase().includes(normalized));
+
+      if (!matches.length) {
+        const empty = document.createElement("div");
+        empty.className = "spotlight-empty";
+        empty.textContent = "No apps found";
+        spotlightResults.appendChild(empty);
+        return;
+      }
+
+      for (const app of matches) {
+        const button = document.createElement("button");
+        button.className = "spotlight-result";
+        button.type = "button";
+        button.style.setProperty("--icon-color", app.color);
+        button.appendChild(createAppIcon(app, "spotlight-result-icon"));
+
+        const label = document.createElement("span");
+        label.textContent = app.title;
+        button.appendChild(label);
+        button.addEventListener("click", () => {
+          closeSpotlight();
+          openApp(app);
+        });
+        spotlightResults.appendChild(button);
+      }
+    }
+
+    function updateClock() {
+      document.getElementById("clock").textContent =
+        new Intl.DateTimeFormat(undefined, {
+          weekday: "short", month: "short", day: "numeric",
+          hour: "numeric", minute: "2-digit"
+        }).format(new Date());
+    }
+
+    document.getElementById("searchButton").addEventListener("click", openSpotlight);
+    document.getElementById("dockSearch").addEventListener("click", openSpotlight);
+
+    document.querySelectorAll(".top-link").forEach((link) => {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        openApp({
+          title: link.textContent.trim(),
+          url: link.getAttribute("href"),
+          color: "#778399"
+        });
+      });
+    });
+
+    document.getElementById("dockFinder").addEventListener("click", () => {
+      for (const { win } of openWindows.values()) win.style.display = "none";
+    });
+
+    spotlightInput.addEventListener("input", () => renderSpotlightResults(spotlightInput.value));
+    spotlight.addEventListener("pointerdown", (event) => {
+      if (event.target === spotlight) closeSpotlight();
+    });
+
+    document.addEventListener("contextmenu", (event) => {
+      if (event.target.closest("[data-app-url]")) return;
+      event.preventDefault();
+      showContextMenu(event);
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      if (!contextMenu.contains(event.target)) contextMenu.classList.remove("open");
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        openSpotlight();
+      }
+      if (event.key === "Escape") {
+        closeSpotlight();
+        contextMenu.classList.remove("open");
+      }
+    });
+
+    window.addEventListener("message", (event) => {
+      if (event.origin !== location.origin) return;
+      if (event.data?.type === "tags-settings-change") {
+        applySavedSettings(event.data.settings);
+      }
+    });
+
+    window.addEventListener("storage", (event) => {
+      if (event.key?.startsWith("tags-settings-")) applySavedSettings();
+    });
+
+    applySavedSettings();
+    buildDesktopApps();
+    updateCalendarIcons();
+    updateClock();
+    window.setInterval(updateClock, 30000);
+    window.setInterval(updateCalendarIcons, 60000);
+  </script>
+</body>
+</html>
