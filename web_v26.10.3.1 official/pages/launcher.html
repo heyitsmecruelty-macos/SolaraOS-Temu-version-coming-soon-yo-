@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#171820">
+  <title>Game Library</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #111827;
+      color: #f7f8ff;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-width: 280px;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 12% 4%, rgba(119, 108, 255, .28), transparent 36rem),
+        radial-gradient(ellipse at 94% 80%, rgba(62, 159, 206, .2), transparent 34rem),
+        linear-gradient(145deg, #151927, #20243a 60%, #172b3b);
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+    .library { width: min(1120px, 100%); margin: 0 auto; padding: 34px 26px 28px; }
+    .header { margin-bottom: 24px; text-align: center; }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #c3c6ff;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    h1 { margin: 0; font-size: clamp(30px, 5vw, 46px); letter-spacing: -.045em; }
+    .description { margin: 10px 0 0; color: rgba(235, 239, 255, .68); font-size: 14px; }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: min(680px, 100%);
+      margin: 24px auto 16px;
+    }
+    .search-wrap { position: relative; flex: 1; }
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      color: rgba(242, 244, 255, .62);
+      font-size: 19px;
+      pointer-events: none;
+      transform: translateY(-52%);
+    }
+    .search {
+      width: 100%;
+      min-height: 46px;
+      padding: 0 15px 0 43px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 14px;
+      outline: none;
+      background: rgba(17, 22, 38, .56);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 8px 24px rgba(0, 0, 0, .14);
+      color: white;
+      backdrop-filter: blur(18px);
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+    .search::placeholder { color: rgba(230, 234, 255, .48); }
+    .search:focus { border-color: rgba(172, 170, 255, .76); box-shadow: 0 0 0 3px rgba(146, 136, 255, .16); }
+    .result-count { min-width: 95px; color: rgba(235, 239, 255, .66); font-size: 12px; text-align: right; }
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+      gap: 12px;
+    }
+    .game-card {
+      --tile-hue: 245;
+      min-width: 0;
+      min-height: 116px;
+      padding: 10px 7px 9px;
+      border: 1px solid transparent;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .025);
+      cursor: pointer;
+      text-align: center;
+      animation: card-arrive .28s ease both;
+      animation-delay: calc(var(--item-index, 0) * 16ms);
+      transition: transform .18s ease, background .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+    .game-card:hover, .game-card:focus-visible {
+      outline: none;
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, .2);
+      background: rgba(255, 255, 255, .075);
+      box-shadow: 0 12px 26px rgba(0, 0, 0, .2), inset 0 1px 0 rgba(255, 255, 255, .1);
+    }
+    .game-card:active { transform: translateY(-1px) scale(.98); }
+    .game-icon {
+      position: relative;
+      display: grid;
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 8px;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .23);
+      border-radius: 19px;
+      background:
+        linear-gradient(145deg, hsla(var(--tile-hue), 92%, 73%, .96), hsla(calc(var(--tile-hue) + 35), 76%, 46%, .94));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 -7px 12px rgba(0, 0, 0, .14), 0 8px 15px rgba(0, 0, 0, .22);
+      color: white;
+      font-size: 24px;
+      font-weight: 800;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .game-card:hover .game-icon { transform: scale(1.06) rotate(-2deg); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 12px 20px rgba(0, 0, 0, .3); }
+    .game-icon img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+    .game-name {
+      display: -webkit-box;
+      overflow: hidden;
+      color: rgba(255, 255, 255, .94);
+      font-size: 11px;
+      font-weight: 650;
+      line-height: 1.28;
+      overflow-wrap: anywhere;
+      text-overflow: ellipsis;
+      text-shadow: 0 1px 5px rgba(0, 0, 0, .55);
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+    .empty-state { grid-column: 1 / -1; padding: 42px 12px; color: rgba(235, 239, 255, .68); text-align: center; }
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 22px 0 0; }
+    .page-button {
+      min-width: 86px;
+      padding: 9px 13px;
+      border: 1px solid rgba(255, 255, 255, .16);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .07);
+      cursor: pointer;
+      transition: background .16s ease, transform .16s ease;
+    }
+    .page-button:hover:not(:disabled) { transform: translateY(-1px); background: rgba(255, 255, 255, .13); }
+    .page-button:disabled { opacity: .42; cursor: default; }
+    .page-status { min-width: 100px; color: rgba(235, 239, 255, .7); font-size: 12px; text-align: center; }
+    .player {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: grid;
+      padding: 20px;
+      place-items: center;
+      background: rgba(5, 8, 16, .78);
+      backdrop-filter: blur(12px);
+      animation: player-arrive .18s ease-out;
+    }
+    .player[hidden] { display: none; }
+    .player-window {
+      display: flex;
+      width: min(1180px, 100%);
+      height: min(800px, 100%);
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: 17px;
+      background: #10131d;
+      box-shadow: 0 28px 90px rgba(0, 0, 0, .5);
+      animation: window-arrive .2s ease-out;
+    }
+    .player-bar {
+      display: flex;
+      min-height: 46px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 12px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .035));
+    }
+    .player-title { overflow: hidden; font-size: 13px; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+    .player-actions { display: flex; flex: none; gap: 7px; }
+    .player-actions button {
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 9px;
+      background: rgba(255, 255, 255, .07);
+      color: white;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .player-status {
+      margin: 0;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, .045);
+      color: rgba(235, 239, 255, .72);
+      font-size: 12px;
+    }
+    .player-status[hidden] { display: none; }
+    .player-frame { width: 100%; height: 100%; flex: 1; border: 0; background: #050608; }
+    @keyframes card-arrive { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes player-arrive { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes window-arrive { from { opacity: 0; transform: scale(.985) translateY(5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+
+    @media (max-width: 600px) {
+      .library { padding: 24px 12px; }
+      .toolbar { gap: 8px; }
+      .result-count { min-width: 73px; font-size: 11px; }
+      .game-grid { grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); gap: 7px; }
+      .game-card { min-height: 102px; padding: 8px 4px; }
+      .game-icon { width: 56px; height: 56px; border-radius: 16px; }
+      .player { padding: 8px; }
+      .player-window { border-radius: 12px; }
+      .player-actions button { padding: 7px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+  <script src="games.js" defer></script>
+  <script src="launcher.js" defer></script>
+</head>
+<body>
+  <main class="library">
+    <header class="header">
+      <p class="eyebrow">Tags.ᐟ Arcade</p>
+      <h1>Game Library</h1>
+      <p class="description">Find a favorite and jump right in.</p>
+    </header>
+    <div class="toolbar">
+      <label class="search-wrap">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input class="search" id="search" type="search" placeholder="Search thousands of games..." autocomplete="off" aria-label="Search games">
+      </label>
+      <span class="result-count" id="result-count" aria-live="polite"></span>
+    </div>
+    <section class="game-grid" id="game-grid" aria-label="Games"></section>
+    <nav class="pagination" aria-label="Game pages">
+      <button class="page-button" id="previous" type="button">Previous</button>
+      <span class="page-status" id="page-status" aria-live="polite"></span>
+      <button class="page-button" id="next" type="button">Next</button>
+    </nav>
+  </main>
+  <section class="player" id="player" role="dialog" aria-modal="true" aria-label="Game player" hidden>
+    <div class="player-window">
+      <div class="player-bar">
+        <span class="player-title" id="player-title"></span>
+        <div class="player-actions">
+          <button id="close-player" type="button" aria-label="Close game">Close</button>
+        </div>
+      </div>
+      <p class="player-status" id="player-status" role="status">Loading game...</p>
+      <iframe class="player-frame" id="player-frame" title="Selected game" sandbox="allow-scripts allow-forms allow-popups allow-pointer-lock" allow="fullscreen; autoplay; gamepad; pointer-lock" allowfullscreen></iframe>
+    </div>
+  </section>
+</body>
+</html>
